@@ -2,20 +2,13 @@ import streamlit as st
 import json
 import boto3
 
-# ---------------------------------------------------------------------------
-# KONFIGURASI AWS SAGEMAKER
-# ---------------------------------------------------------------------------
-# Wajib diganti dengan nama endpoint yang aktif dari hasil deploy endpoint.ipynb
+# Konfigurasi AWS SageMaker
 ENDPOINT_NAME = "credit-score-endpoint"
-REGION_NAME = "us-east-1" # Sesuaikan dengan region AWS kamu
+REGION_NAME = "us-east-1"
 
-# Inisialisasi boto3 client untuk SageMaker Runtime
-# (Pastikan instance EC2 kamu sudah di-attach IAM Role dengan 'AmazonSageMakerFullAccess')
 sm_client = boto3.client("sagemaker-runtime", region_name=REGION_NAME)
 
-# ---------------------------------------------------------------------------
-# DATA REFERENSI KATEGORI
-# ---------------------------------------------------------------------------
+# Data Kategori
 _KNOWN_CAT_VALUES = {
     "Month": [
         "January", "February", "March", "April", "May", "June", 
@@ -38,9 +31,7 @@ _KNOWN_CAT_VALUES = {
     ],
 }
 
-# ---------------------------------------------------------------------------
-# FUNGSI INFERENSI KE SAGEMAKER
-# ---------------------------------------------------------------------------
+# Fungsi Inferensi ke SageMaker
 def predict_credit_score(data):
     """Mengirim payload JSON ke SageMaker Endpoint untuk mendapatkan prediksi."""
     payload = json.dumps(data)
@@ -54,9 +45,7 @@ def predict_credit_score(data):
     result = json.loads(response["Body"].read().decode("utf-8"))
     return result
 
-# ---------------------------------------------------------------------------
-# STREAMLIT UI
-# ---------------------------------------------------------------------------
+# Streamlit UI
 def main():
     st.set_page_config(page_title="Credit Scoring System", layout="wide")
     
@@ -65,7 +54,7 @@ def main():
     st.title("Credit Scoring System")
     st.markdown("Sistem prediksi kelayakan kredit menggunakan Machine Learning di AWS SageMaker.")
 
-    # ---- Sidebar Input ----
+    # Sidebar Input
     st.sidebar.header("Data Nasabah")
 
     st.sidebar.subheader("Informasi Pribadi")
@@ -100,7 +89,7 @@ def main():
     selected_loans   = st.sidebar.multiselect("Pilih yang dimiliki", loan_types_all, default=["Personal Loan"])
     type_of_loan_str = ", ".join(selected_loans) if selected_loans else ""
 
-    # ---- Main Form ----
+    # Main Form
     with st.form("input_form"):
         st.write("### Input Data Keuangan")
         col1, col2 = st.columns(2)
@@ -120,7 +109,7 @@ def main():
 
         submitted = st.form_submit_button("Analisis Kredit", type="primary")
 
-    # ---- Execution ----
+    # Execution
     if submitted:
         input_data = {
             "Month":                    month,
@@ -177,7 +166,6 @@ def main():
             except Exception as e:
                 st.error("Gagal terhubung ke SageMaker Endpoint.")
                 st.error(f"Detail Error: {e}")
-                st.info("Pastikan: \n1. Nama Endpoint benar\n2. Status Endpoint di SageMaker adalah 'InService'\n3. EC2 ini memiliki IAM Role dengan izin 'AmazonSageMakerFullAccess'")
 
 if __name__ == "__main__":
     main()
