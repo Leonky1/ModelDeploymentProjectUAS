@@ -139,7 +139,13 @@ def main():
 
         with st.spinner("Menganalisis data via SageMaker Endpoint..."):
             try:
-                result = predict_credit_score(input_data)
+                raw = predict_credit_score(input_data)
+                
+                # Handle both formats: direct dict atau wrapped dalam "predictions"
+                if "predictions" in raw:
+                    result = raw["predictions"][0] if isinstance(raw["predictions"], list) else raw["predictions"]
+                else:
+                    result = raw
                 
                 label = result.get("predicted_class", "Unknown")
                 conf  = result.get("confidence", 0.0)
